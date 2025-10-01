@@ -2,8 +2,8 @@
 Animation widget for displaying strike and spare celebrations.
 """
 
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsOpacityEffect
+from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QRect
 from PyQt5.QtGui import QMovie, QFont
 import os
 
@@ -56,10 +56,18 @@ class AnimationWidget(QWidget):
         
         # Timer for auto-hide
         self.hide_timer = QTimer()
-        self.hide_timer.timeout.connect(self.hide)
+        self.hide_timer.timeout.connect(self.fade_out)
         
         # Movie object for GIF playback
         self.movie = None
+        
+        # Opacity effect for fade animations
+        self.opacity_effect = QGraphicsOpacityEffect()
+        self.container.setGraphicsEffect(self.opacity_effect)
+        
+        # Animation objects
+        self.fade_animation = QPropertyAnimation(self.opacity_effect, b"opacity")
+        self.scale_animation = QPropertyAnimation(self, b"geometry")
     
     def show_strike(self):
         """Display strike animation."""
@@ -123,7 +131,7 @@ class AnimationWidget(QWidget):
         self.gif_label.setText("")
     
     def _show_and_auto_hide(self):
-        """Show the widget and auto-hide after duration."""
+        """Show the widget and auto-hide after duration with animations."""
         # Center on parent
         if self.parent():
             parent_rect = self.parent().geometry()
@@ -134,12 +142,48 @@ class AnimationWidget(QWidget):
         self.show()
         self.raise_()
         
+        # Fade in animation
+        self.opacity_effect.setOpacity(0)
+        self.fade_animation.setDuration(300)  # 300ms
+        self.fade_animation.setStartValue(0)
+        self.fade_animation.setEndValue(1)
+        self.fade_animation.setEasingCurve(QEasingCurve.OutCubic)
+        self.fade_animation.start()
+        
+        # Scale in animation (pop effect)
+        current_geo = self.geometry()
+        start_geo = QRect(
+            current_geo.x() + current_geo.width() // 4,
+            current_geo.y() + current_geo.height() // 4,
+            current_geo.width() // 2,
+            current_geo.height() // 2
+        )
+        
+        self.scale_animation.setDuration(300)
+        self.scale_animation.setStartValue(start_geo)
+        self.scale_animation.setEndValue(current_geo)
+        self.scale_animation.setEasingCurve(QEasingCurve.OutBack)
+        self.scale_animation.start()
+        
         # Auto-hide after 2 seconds
         self.hide_timer.start(2000)
     
+    def fade_out(self):
+        """Fade out and then hide."""
+        self.fade_animation.setDuration(300)
+        self.fade_animation.setStartValue(1)
+        self.fade_animation.setEndValue(0)
+        self.fade_animation.setEasingCurve(QEasingCurve.InCubic)
+        self.fade_animation.finished.connect(self.hide)
+        self.fade_animation.start()
+    
     def hide(self):
-        """Override hide to stop movie."""
+        """Override hide to stop movie and disconnect animation."""
         if self.movie:
             self.movie.stop()
+        try:
+            self.fade_animation.finished.disconnect(self.hide)
+        except:
+            pass
         super().hide()
 

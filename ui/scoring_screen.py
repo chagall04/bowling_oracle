@@ -11,6 +11,7 @@ from PyQt5.QtGui import QFont, QPixmap
 from typing import List
 from database import DatabaseHandler
 from scoring import GameManager, BowlingGame
+from ui.sound_manager import SoundManager
 import os
 
 
@@ -167,6 +168,7 @@ class ScoringScreen(QWidget):
         self.game_manager = None
         self.frame_widgets = {}  # Store frame display widgets
         self.score_labels = {}   # Store score labels
+        self.sound_manager = SoundManager()  # Initialize sound system
         self.init_ui()
     
     def init_ui(self):
@@ -227,11 +229,9 @@ class ScoringScreen(QWidget):
                     border: none;
                     border-radius: 10px;
                     font-weight: bold;
-                    transition: all 0.3s;
                 }
                 QPushButton:hover {
                     background-color: #2980b9;
-                    transform: scale(1.05);
                 }
                 QPushButton:pressed {
                     background-color: #1f5f8b;
@@ -459,11 +459,13 @@ class ScoringScreen(QWidget):
             # Update scorecard display
             self.update_display()
             
-            # Show animation for strike/spare
+            # Show animation and play sound for strike/spare
             if result.get('is_strike'):
                 self.show_animation('strike')
+                self.sound_manager.play_strike()
             elif result.get('is_spare'):
                 self.show_animation('spare')
+                self.sound_manager.play_spare()
             
             # Check if game is complete
             if result.get('all_games_complete'):

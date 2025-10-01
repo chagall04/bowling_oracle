@@ -1,6 +1,6 @@
-# Animation Assets
+# Animation & Sound Assets
 
-This directory contains GIF animations for strikes and spares.
+This directory contains GIF animations and sound effects for strikes and spares.
 
 ## Required Files
 

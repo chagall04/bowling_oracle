@@ -146,7 +146,6 @@ class MainMenuScreen(QWidget):
             }}
             QPushButton:hover {{
                 background-color: {hover_color};
-                transform: scale(1.02);
             }}
             QPushButton:pressed {{
                 background-color: {base_color};
