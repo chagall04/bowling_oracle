@@ -38,7 +38,7 @@ class MainMenuScreen(QWidget):
         layout.addWidget(title)
         
         # Subtitle with mystical vibe
-        subtitle = QLabel("✨ Divine Your Perfect Game ✨")
+        subtitle = QLabel("🔮 The Crystal Ball Knows Your Next Strike 🔮")
         subtitle_font = QFont("Arial", 14, QFont.Style.StyleItalic)
         subtitle.setFont(subtitle_font)
         subtitle.setAlignment(Qt.AlignCenter)
