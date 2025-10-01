@@ -565,7 +565,14 @@ class ScoringScreen(QWidget):
         results = []
         
         for player_game in self.game_manager.players:
-            final_score = player_game.get_total_score() or 0
+            # Force calculate total score for completed game
+            total = 0
+            for i in range(10):
+                frame_score = player_game.calculate_frame_score(i)
+                if frame_score is not None:
+                    total += frame_score
+            
+            final_score = total
             self.db.update_game_score(player_game.game_id, final_score)
             
             # Save all frames

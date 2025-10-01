@@ -334,7 +334,8 @@ class GameManager:
         result['player_name'] = current_player.player_name
         
         # Check if we should advance to next player
-        if result['frame_complete'] and not result['game_complete']:
+        # Advance whenever a frame is complete (even if that player is now done)
+        if result['frame_complete']:
             self._advance_to_next_player()
         
         # Check if all players are done
