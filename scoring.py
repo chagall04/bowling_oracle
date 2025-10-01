@@ -347,11 +347,16 @@ class GameManager:
     
     def _advance_to_next_player(self):
         """Advance to the next player's turn."""
+        # Move to next player
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
         
-        # Skip players who have finished
+        # Skip players who have finished, but only if there are unfinished players
         attempts = 0
-        while self.players[self.current_player_index].is_complete and attempts < len(self.players):
+        while attempts < len(self.players):
+            current = self.players[self.current_player_index]
+            if not current.is_complete:
+                # Found an active player
+                break
             self.current_player_index = (self.current_player_index + 1) % len(self.players)
             attempts += 1
     

@@ -4,8 +4,9 @@ Live scoring screen with scorecard and input system.
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
                              QLabel, QGridLayout, QFrame, QMessageBox,
-                             QListWidget, QListWidgetItem, QDialog, QSizePolicy)
-from PyQt5.QtCore import Qt, pyqtSignal, QTimer
+                             QListWidget, QListWidgetItem, QDialog, QSizePolicy,
+                             QGraphicsOpacityEffect)
+from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QPropertyAnimation, QEasingCurve
 from PyQt5.QtGui import QFont, QPixmap
 from typing import List
 from database import DatabaseHandler
@@ -225,9 +226,15 @@ class ScoringScreen(QWidget):
                     color: white;
                     border: none;
                     border-radius: 10px;
+                    font-weight: bold;
+                    transition: all 0.3s;
                 }
                 QPushButton:hover {
                     background-color: #2980b9;
+                    transform: scale(1.05);
+                }
+                QPushButton:pressed {
+                    background-color: #1f5f8b;
                 }
                 QPushButton:disabled {
                     background-color: #bdc3c7;

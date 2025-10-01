@@ -29,8 +29,11 @@ class BowlingTrackerApp(QMainWindow):
         self.db = DatabaseHandler()
         
         # Set up main window
-        self.setWindowTitle("Bowling Score Tracker")
+        self.setWindowTitle("🎳 Bowling Oracle 🧙")
         self.setMinimumSize(1200, 800)
+        
+        # Theme settings
+        self.current_theme = 'light'
         
         # Create stacked widget for screen management
         self.stacked_widget = QStackedWidget()
@@ -140,9 +143,64 @@ class BowlingTrackerApp(QMainWindow):
         Args:
             theme: 'light' or 'dark'
         """
-        # This would be implemented with full theme support
-        # For now, just store the preference
-        pass
+        self.current_theme = theme
+        
+        if theme == 'dark':
+            # Dark theme stylesheet
+            dark_style = """
+                QWidget {
+                    background-color: #1e1e1e;
+                    color: #e0e0e0;
+                }
+                QMainWindow {
+                    background-color: #1e1e1e;
+                }
+                QPushButton {
+                    background-color: #2d2d2d;
+                    color: #e0e0e0;
+                    border: 1px solid #3d3d3d;
+                    border-radius: 5px;
+                    padding: 8px;
+                }
+                QPushButton:hover {
+                    background-color: #3d3d3d;
+                }
+                QLabel {
+                    color: #e0e0e0;
+                }
+                QLineEdit, QComboBox {
+                    background-color: #2d2d2d;
+                    color: #e0e0e0;
+                    border: 1px solid #3d3d3d;
+                    border-radius: 3px;
+                    padding: 5px;
+                }
+                QListWidget, QTableWidget {
+                    background-color: #2d2d2d;
+                    color: #e0e0e0;
+                    border: 1px solid #3d3d3d;
+                }
+                QGroupBox {
+                    color: #e0e0e0;
+                    border: 2px solid #3d3d3d;
+                    border-radius: 5px;
+                    margin-top: 10px;
+                    font-weight: bold;
+                }
+                QFrame {
+                    background-color: #2d2d2d;
+                }
+            """
+            self.setStyleSheet(dark_style)
+        else:
+            # Light theme (default)
+            self.setStyleSheet("")
+        
+        # Refresh all screens
+        for i in range(self.stacked_widget.count()):
+            widget = self.stacked_widget.widget(i)
+            if hasattr(widget, 'update'):
+                widget.update()
     
     def show_game_over(self, results):
         """

@@ -1,6 +1,6 @@
-# 🎳 Bowling Score Tracker
+# 🎳 Bowling Oracle 🧙
 
-A comprehensive multi-player bowling score tracking application built with Python, PyQt5, and SQLite. Track games, manage players, and visualize performance statistics with an intuitive desktop interface.
+A mystical multi-player bowling score tracking application built with Python, PyQt5, and SQLite. Divine your perfect game with real-time scoring, player management, and performance analytics through an enchanted desktop interface.
 
 ## Features
 
@@ -158,3 +158,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is open source and available under the MIT License.
+
+## Acknowledgments
+
+✨ Powered by Ancient Bowling Wisdom ✨  
+Built with 🧙 magic and Python

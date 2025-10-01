@@ -29,17 +29,17 @@ class MainMenuScreen(QWidget):
         layout.setSpacing(20)
         layout.setContentsMargins(50, 50, 50, 50)
         
-        # Title
-        title = QLabel("🎳 Bowling Score Tracker")
-        title_font = QFont("Arial", 32, QFont.Bold)
+        # Title with wizard theme
+        title = QLabel("🎳 Bowling Oracle 🧙")
+        title_font = QFont("Arial", 36, QFont.Bold)
         title.setFont(title_font)
         title.setAlignment(Qt.AlignCenter)
         title.setStyleSheet("color: #2c3e50; margin: 20px;")
         layout.addWidget(title)
         
-        # Subtitle
-        subtitle = QLabel("Track Your Perfect Game")
-        subtitle_font = QFont("Arial", 14)
+        # Subtitle with mystical vibe
+        subtitle = QLabel("✨ Divine Your Perfect Game ✨")
+        subtitle_font = QFont("Arial", 14, QFont.Style.StyleItalic)
         subtitle.setFont(subtitle_font)
         subtitle.setAlignment(Qt.AlignCenter)
         subtitle.setStyleSheet("color: #7f8c8d; margin-bottom: 30px;")
@@ -107,7 +107,7 @@ class MainMenuScreen(QWidget):
         layout.addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         
         # Footer
-        footer = QLabel("Athlone Bowling League • v1.0")
+        footer = QLabel("🔮 Powered by Ancient Bowling Wisdom • v1.0 🔮")
         footer_font = QFont("Arial", 10)
         footer.setFont(footer_font)
         footer.setAlignment(Qt.AlignCenter)
@@ -142,12 +142,16 @@ class MainMenuScreen(QWidget):
                 border-radius: 10px;
                 padding: 15px;
                 text-align: center;
+                font-size: 14px;
             }}
             QPushButton:hover {{
                 background-color: {hover_color};
+                transform: scale(1.02);
             }}
             QPushButton:pressed {{
                 background-color: {base_color};
+                padding-top: 17px;
+                padding-bottom: 13px;
             }}
         """)
         

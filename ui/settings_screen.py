@@ -191,8 +191,8 @@ class SettingsScreen(QWidget):
             QMessageBox.information(
                 self,
                 "Theme Changed",
-                f"{theme.capitalize()} mode activated!\n\n"
-                f"(Theme will apply on next app restart)"
+                f"🧙 {theme.capitalize()} mode activated!\n\n"
+                f"The Oracle has transformed the interface."
             )
     
     def export_players_csv(self):
