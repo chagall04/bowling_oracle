@@ -74,10 +74,11 @@ class BowlingGame:
             if len(frame_10) == 1 and pins == 10:
                 result['is_strike'] = True
             elif len(frame_10) == 2:
+                # Check for spare
                 if sum(frame_10) == 10:
                     result['is_spare'] = True
-                # Check if frame is complete
-                if frame_10[0] < 10:  # No strike on first roll
+                # Check if frame is complete (only if no strike on first roll AND no spare)
+                if frame_10[0] < 10 and sum(frame_10) < 10:
                     result['frame_complete'] = True
                     self.is_complete = True
                     result['game_complete'] = True
@@ -163,17 +164,21 @@ class BowlingGame:
         Calculate the total score for the game so far.
         
         Returns:
-            Total score or None if any frames can't be scored yet
+            Total score (sum of calculable frames), or None if no frames can be scored
         """
         total = 0
+        any_scored = False
         
         for i in range(10):
             frame_score = self.calculate_frame_score(i)
-            if frame_score is None:
-                return None  # Can't calculate total yet
-            total += frame_score
+            if frame_score is not None:
+                total += frame_score
+                any_scored = True
+            else:
+                # Can't calculate this frame yet, stop here
+                break
         
-        return total
+        return total if any_scored else None
     
     def get_cumulative_scores(self) -> List[Optional[int]]:
         """
