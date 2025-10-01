@@ -15,6 +15,7 @@ class MainMenuScreen(QWidget):
     start_game_clicked = pyqtSignal()
     view_stats_clicked = pyqtSignal()
     manage_players_clicked = pyqtSignal()
+    settings_clicked = pyqtSignal()
     quit_clicked = pyqtSignal()
     
     def __init__(self):
@@ -73,6 +74,13 @@ class MainMenuScreen(QWidget):
         )
         self.manage_players_btn.clicked.connect(self.manage_players_clicked.emit)
         
+        self.settings_btn = self._create_menu_button(
+            "⚙️ Settings",
+            "#34495e",
+            "#2c3e50"
+        )
+        self.settings_btn.clicked.connect(self.settings_clicked.emit)
+        
         self.quit_btn = self._create_menu_button(
             "❌ Quit",
             "#c0392b",
@@ -84,6 +92,7 @@ class MainMenuScreen(QWidget):
         button_container.addWidget(self.start_game_btn)
         button_container.addWidget(self.view_stats_btn)
         button_container.addWidget(self.manage_players_btn)
+        button_container.addWidget(self.settings_btn)
         button_container.addWidget(self.quit_btn)
         
         # Center the buttons

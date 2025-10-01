@@ -15,6 +15,7 @@ from ui.scoring_screen import ScoringScreen
 from ui.stats_screen import StatsScreen
 from ui.game_over import GameOverScreen
 from ui.animations import AnimationWidget
+from ui.settings_screen import SettingsScreen
 
 
 class BowlingTrackerApp(QMainWindow):
@@ -41,6 +42,7 @@ class BowlingTrackerApp(QMainWindow):
         self.scoring_screen = ScoringScreen(self.db)
         self.stats_screen = StatsScreen(self.db)
         self.game_over_screen = GameOverScreen()
+        self.settings_screen = SettingsScreen(self.db)
         
         # Add screens to stacked widget
         self.stacked_widget.addWidget(self.main_menu)         # Index 0
@@ -48,6 +50,7 @@ class BowlingTrackerApp(QMainWindow):
         self.stacked_widget.addWidget(self.scoring_screen)    # Index 2
         self.stacked_widget.addWidget(self.stats_screen)      # Index 3
         self.stacked_widget.addWidget(self.game_over_screen)  # Index 4
+        self.stacked_widget.addWidget(self.settings_screen)   # Index 5
         
         # Animation widget
         self.animation_widget = AnimationWidget(self)
@@ -75,6 +78,7 @@ class BowlingTrackerApp(QMainWindow):
         self.main_menu.start_game_clicked.connect(self.show_game_setup)
         self.main_menu.view_stats_clicked.connect(self.show_stats)
         self.main_menu.manage_players_clicked.connect(self.show_player_management)
+        self.main_menu.settings_clicked.connect(self.show_settings)
         self.main_menu.quit_clicked.connect(self.quit_application)
         
         # Player management signals
@@ -90,6 +94,10 @@ class BowlingTrackerApp(QMainWindow):
         # Game over screen signals
         self.game_over_screen.rematch_clicked.connect(self.start_rematch)
         self.game_over_screen.main_menu_clicked.connect(self.show_main_menu)
+        
+        # Settings screen signals
+        self.settings_screen.back_clicked.connect(self.show_main_menu)
+        self.settings_screen.theme_changed.connect(self.apply_theme)
     
     def show_main_menu(self):
         """Show the main menu screen."""
@@ -120,6 +128,21 @@ class BowlingTrackerApp(QMainWindow):
             return
         
         self.stacked_widget.setCurrentIndex(3)
+    
+    def show_settings(self):
+        """Show the settings screen."""
+        self.stacked_widget.setCurrentIndex(5)
+    
+    def apply_theme(self, theme: str):
+        """
+        Apply theme to application.
+        
+        Args:
+            theme: 'light' or 'dark'
+        """
+        # This would be implemented with full theme support
+        # For now, just store the preference
+        pass
     
     def show_game_over(self, results):
         """
