@@ -26,7 +26,7 @@ class SoundManager:
     
     def _load_sounds(self):
         """Load sound files if they exist."""
-        assets_path = os.path.join("assets", "animations")
+        assets_path = os.path.join("assets", "audio")
         
         # Load multiple strike sounds (strike.wav, strike1.wav, strike2.wav, etc.)
         for ext in ['.wav', '.mp3', '.ogg']:

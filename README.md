@@ -148,7 +148,8 @@ bowling_oracle/
 │   ├── animations.py      # Strike/spare animations
 │   └── sound_manager.py   # Audio playback
 ├── assets/
-│   └── animations/        # Strike/spare GIFs & sounds
+│   ├── animations/        # Strike/spare GIFs
+│   └── audio/             # Sound effects & music
 ├── requirements.txt       # Python dependencies
 └── README.md             # This file
 ```
@@ -227,17 +228,19 @@ The app uses **PyQt5's QPropertyAnimation** for smooth fade-in/out, scale effect
 
 **Example file structure for maximum variety:**
 ```
-assets/animations/
-├── strike.gif
-├── strike1.gif
-├── strike2.gif
-├── strike.wav
-├── strike1.wav
-├── spare.gif
-├── spare1.gif
-├── spare.wav
-├── pin.wav
-└── leaderboard.mp3
+assets/
+├── animations/
+│   ├── strike.gif
+│   ├── strike1.gif
+│   ├── strike2.gif
+│   ├── spare.gif
+│   └── spare1.gif
+└── audio/
+    ├── strike.wav
+    ├── strike1.wav
+    ├── spare.wav
+    ├── pin.wav
+    └── leaderboard.mp3
 ```
 
 ## Contributing

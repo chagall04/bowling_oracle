@@ -1,31 +1,52 @@
-# Animation & Sound Assets
+# Animation Assets
 
-This directory contains GIF animations and sound effects for strikes and spares.
+This directory contains GIF animations for strikes and spares.
 
-## Required Files
+## GIF Files (Optional)
 
-- `strike.gif` - Animation shown when a player gets a strike
-- `spare.gif` - Animation shown when a player gets a spare
+All files are optional - the app uses emoji fallbacks if no GIFs are present!
+
+### Strike Animations
+- `strike.gif` - Base strike GIF
+- `strike1.gif`, `strike2.gif`, etc. - Additional variations (up to 9)
+- **Plays**: When you get a strike
+- **Behavior**: Randomly picks one if multiple files exist
+
+### Spare Animations
+- `spare.gif` - Base spare GIF  
+- `spare1.gif`, `spare2.gif`, etc. - Additional variations (up to 9)
+- **Plays**: When you get a spare
+- **Behavior**: Randomly picks one if multiple files exist
 
 ## Specifications
 
-- **Format**: GIF (animated)
-- **Recommended size**: 200x200 pixels
+- **Format**: Animated GIF only
+- **Recommended size**: 200x200 to 400x400 pixels
 - **Duration**: 1-2 seconds
-- **Style**: Fun, retro bowling alley aesthetic
+- **Style**: Fun, energetic, mystical bowling theme
 
 ## Fallback Behavior
 
-If these GIF files are not present, the application will use emoji fallbacks:
-- Strike: 💥
-- Spare: 🎯
+If no GIF files are present:
+- Strike: 💥 emoji
+- Spare: 🎯 emoji
 
-## Finding Animations
+## Where to Find GIFs
 
-You can find suitable bowling GIFs from:
-- [GIPHY](https://giphy.com/) - Search for "bowling strike" or "bowling spare"
-- [Tenor](https://tenor.com/) - Animated GIF library
-- Create your own custom animations
+- [GIPHY](https://giphy.com/search/bowling-strike) - Huge GIF library
+- [Tenor](https://tenor.com/search/bowling-gifs) - GIF search engine
+- [Pixabay](https://pixabay.com/gifs/search/bowling/) - Free stock GIFs
 
-Simply download the GIF files and save them in this directory with the appropriate names.
+## Example Structure
+
+```
+assets/animations/
+├── strike.gif
+├── strike1.gif
+├── strike2.gif
+├── spare.gif
+└── spare1.gif
+```
+
+**Note**: Sound files are now in `assets/audio/` - check that folder for audio setup!
 
