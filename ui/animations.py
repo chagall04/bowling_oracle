@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsOpacityEffect
 from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QRect
 from PyQt5.QtGui import QMovie, QFont
 import os
+import random
 
 
 class AnimationWidget(QWidget):
@@ -70,7 +71,7 @@ class AnimationWidget(QWidget):
         self.scale_animation = QPropertyAnimation(self, b"geometry")
     
     def show_strike(self):
-        """Display strike animation."""
+        """Display strike animation with random GIF selection."""
         self.text_label.setText("⚡ STRIKE! ⚡")
         self.container.setStyleSheet("""
             QWidget {
@@ -80,10 +81,10 @@ class AnimationWidget(QWidget):
             }
         """)
         
-        # Try to load GIF if available
-        gif_path = os.path.join("assets", "animations", "strike.gif")
-        if os.path.exists(gif_path):
-            self._play_gif(gif_path)
+        # Try to load a random GIF from available strike GIFs
+        gif_files = self._find_gif_files("strike")
+        if gif_files:
+            self._play_gif("strike")
         else:
             # Use emoji fallback
             self.gif_label.setFont(QFont("Arial", 72))
@@ -92,7 +93,7 @@ class AnimationWidget(QWidget):
         self._show_and_auto_hide()
     
     def show_spare(self):
-        """Display spare animation."""
+        """Display spare animation with random GIF selection."""
         self.text_label.setText("✨ SPARE! ✨")
         self.container.setStyleSheet("""
             QWidget {
@@ -102,10 +103,10 @@ class AnimationWidget(QWidget):
             }
         """)
         
-        # Try to load GIF if available
-        gif_path = os.path.join("assets", "animations", "spare.gif")
-        if os.path.exists(gif_path):
-            self._play_gif(gif_path)
+        # Try to load a random GIF from available spare GIFs
+        gif_files = self._find_gif_files("spare")
+        if gif_files:
+            self._play_gif("spare")
         else:
             # Use emoji fallback
             self.gif_label.setFont(QFont("Arial", 72))
@@ -113,22 +114,54 @@ class AnimationWidget(QWidget):
         
         self._show_and_auto_hide()
     
-    def _play_gif(self, gif_path: str):
+    def _find_gif_files(self, base_name: str) -> list:
         """
-        Load and play a GIF animation.
+        Find all GIF files for a given base name (e.g., 'strike' finds strike.gif, strike1.gif, etc.)
         
         Args:
-            gif_path: Path to GIF file
+            base_name: Base name of the GIF (e.g., 'strike' or 'spare')
+            
+        Returns:
+            List of found GIF file paths
         """
-        if self.movie:
-            self.movie.stop()
+        gif_files = []
+        assets_path = os.path.join("assets", "animations")
         
-        self.movie = QMovie(gif_path)
-        self.gif_label.setMovie(self.movie)
-        self.movie.start()
+        # Check for base file (e.g., strike.gif)
+        base_path = os.path.join(assets_path, f"{base_name}.gif")
+        if os.path.exists(base_path):
+            gif_files.append(base_path)
         
-        # Clear text from gif_label
-        self.gif_label.setText("")
+        # Check for numbered files (e.g., strike1.gif, strike2.gif, etc.)
+        for i in range(1, 10):  # Support up to 9 variations
+            numbered_path = os.path.join(assets_path, f"{base_name}{i}.gif")
+            if os.path.exists(numbered_path):
+                gif_files.append(numbered_path)
+        
+        return gif_files
+    
+    def _play_gif(self, base_name: str):
+        """
+        Load and play a random GIF animation from available files.
+        
+        Args:
+            base_name: Base name of GIF files to choose from ('strike' or 'spare')
+        """
+        gif_files = self._find_gif_files(base_name)
+        
+        if gif_files:
+            # Pick a random GIF from available files
+            gif_path = random.choice(gif_files)
+            
+            if self.movie:
+                self.movie.stop()
+            
+            self.movie = QMovie(gif_path)
+            self.gif_label.setMovie(self.movie)
+            self.movie.start()
+            
+            # Clear text from gif_label
+            self.gif_label.setText("")
     
     def _show_and_auto_hide(self):
         """Show the widget and auto-hide after duration with animations."""

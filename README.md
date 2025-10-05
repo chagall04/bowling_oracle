@@ -165,8 +165,10 @@ Make your Bowling Oracle even more magical with custom animations and sounds!
    - [Pixabay](https://pixabay.com/gifs/search/bowling/)
 
 2. **Save them** in `assets/animations/`:
-   - `strike.gif` - Plays when you get a strike
-   - `spare.gif` - Plays when you get a spare
+   - **Single GIF**: `strike.gif`, `spare.gif`
+   - **Multiple GIFs** (random selection): `strike1.gif`, `strike2.gif`, `strike3.gif`, etc.
+   - Mix base + numbered: `strike.gif`, `strike1.gif`, `strike2.gif` - all will be used!
+   - Supports up to 9 variations per type
 
 3. **Recommended specs**:
    - Size: 200x200 to 400x400 pixels
@@ -177,7 +179,9 @@ Make your Bowling Oracle even more magical with custom animations and sounds!
 - Strike: Pins exploding, "STRIKE!" text, wizard casting spell 🧙‍♂️, fireworks
 - Spare: Pins falling, "SPARE!" text, crystal ball glowing 🔮, star effects
 
-### 🔊 Adding Sound Effects (Optional)
+> 💡 **Pro tip**: Add multiple GIFs for variety - the app randomly picks one each time!
+
+### 🔊 Adding Sound Effects & Music (Optional)
 
 1. **Download bowling sounds** from free sources:
    - [Freesound.org](https://freesound.org/search/?q=bowling+strike)
@@ -185,25 +189,56 @@ Make your Bowling Oracle even more magical with custom animations and sounds!
    - [Pixabay Sounds](https://pixabay.com/sound-effects/search/bowling/)
 
 2. **Save them** in `assets/animations/`:
-   - `strike.wav` or `strike.mp3` - Plays on strike
-   - `spare.wav` or `spare.mp3` - Plays on spare
+   
+   **Strike sounds** (plays on strike):
+   - **Single**: `strike.wav` / `strike.mp3`
+   - **Multiple** (random): `strike1.wav`, `strike2.wav`, etc. (up to 9)
+   
+   **Spare sounds** (plays on spare):
+   - **Single**: `spare.wav` / `spare.mp3`
+   - **Multiple** (random): `spare1.wav`, `spare2.wav`, etc.
+   
+   **Pin knock** (plays when clicking pin buttons):
+   - `pin.wav` / `pin.mp3` / `pin.ogg`
+   
+   **Leaderboard music** (plays on game over screen, loops):
+   - `leaderboard.wav` / `leaderboard.mp3` / `leaderboard.ogg`
 
 3. **Formats supported**: `.wav`, `.mp3`, `.ogg`
 
-**Ideas:**
+**Sound Ideas:**
 - Strike: Pins crashing, crowd cheering, dramatic music sting
 - Spare: Lighter pin sound, satisfying "ding", mystical chime
+- Pin knock: Single pin hit, bowling ball rolling sound
+- Leaderboard: Upbeat victory music, triumphant fanfare (15-30 seconds)
 
 ### ✨ How It Works
 
 Once files are in place:
 
-1. **Strike/Spare happens** → App checks for media files
+1. **Strike/Spare happens** → App randomly picks from available GIFs/sounds
 2. **GIF found** → Plays with smooth fade-in/scale animation
-3. **Sound found** → Plays simultaneously  
+3. **Sound found** → Plays simultaneously (random selection if multiple)
 4. **No files?** → Falls back to emoji (💥 for strike, 🎯 for spare)
+5. **Pin button clicked** → Plays pin knock sound for tactile feedback
+6. **Game over** → Leaderboard music starts playing (loops until exit)
 
 The app uses **PyQt5's QPropertyAnimation** for smooth fade-in/out, scale effects, and easing curves - no CSS needed!
+
+**Example file structure for maximum variety:**
+```
+assets/animations/
+├── strike.gif
+├── strike1.gif
+├── strike2.gif
+├── strike.wav
+├── strike1.wav
+├── spare.gif
+├── spare1.gif
+├── spare.wav
+├── pin.wav
+└── leaderboard.mp3
+```
 
 ## Contributing
 

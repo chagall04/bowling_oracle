@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from typing import List, Dict
+from ui.sound_manager import SoundManager
 
 
 class GameOverScreen(QWidget):
@@ -20,6 +21,7 @@ class GameOverScreen(QWidget):
         """Initialize the game over screen."""
         super().__init__()
         self.game_results = []
+        self.sound_manager = SoundManager()  # Initialize sound system
         self.init_ui()
     
     def init_ui(self):
@@ -113,7 +115,7 @@ class GameOverScreen(QWidget):
                 background-color: #2980b9;
             }
         """)
-        self.menu_btn.clicked.connect(self.main_menu_clicked.emit)
+        self.menu_btn.clicked.connect(self.handle_main_menu)
         
         button_layout.addStretch()
         button_layout.addWidget(self.rematch_btn)
@@ -127,7 +129,7 @@ class GameOverScreen(QWidget):
     
     def display_results(self, results: List[Dict]):
         """
-        Display game results.
+        Display game results and play leaderboard music.
         
         Args:
             results: List of dictionaries with player_name, player_id, and final_score
@@ -143,6 +145,9 @@ class GameOverScreen(QWidget):
             self.winner_label.setText(
                 f"🎉 {winner['player_name']} wins with {winner['final_score']} points! 🎉"
             )
+        
+        # Start playing leaderboard music
+        self.sound_manager.play_leaderboard_music()
         
         # Populate table
         self.scores_table.setRowCount(len(sorted_results))
@@ -176,7 +181,21 @@ class GameOverScreen(QWidget):
         self.scores_table.resizeColumnsToContents()
     
     def handle_rematch(self):
-        """Handle rematch button click."""
+        """Handle rematch button click and stop music."""
+        # Stop leaderboard music
+        self.sound_manager.stop_music()
+        
         player_ids = [result['player_id'] for result in self.game_results]
         self.rematch_clicked.emit(player_ids)
+    
+    def handle_main_menu(self):
+        """Handle main menu button click and stop music."""
+        # Stop leaderboard music
+        self.sound_manager.stop_music()
+        self.main_menu_clicked.emit()
+    
+    def hideEvent(self, event):
+        """Stop music when leaving this screen."""
+        self.sound_manager.stop_music()
+        super().hideEvent(event)
 

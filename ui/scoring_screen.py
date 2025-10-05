@@ -241,7 +241,7 @@ class ScoringScreen(QWidget):
                     color: #7f8c8d;
                 }
             """)
-            btn.clicked.connect(lambda checked, pins=i: self.record_pins(pins))
+            btn.clicked.connect(lambda checked, pins=i: self.on_pin_button_clicked(pins))
             self.pin_buttons.append(btn)
             
             row = i // 4
@@ -442,6 +442,19 @@ class ScoringScreen(QWidget):
         
         widget.setLayout(layout)
         return widget
+    
+    def on_pin_button_clicked(self, pins: int):
+        """
+        Handle pin button click with sound effect.
+        
+        Args:
+            pins: Number of pins (0-10)
+        """
+        # Play pin knock sound
+        self.sound_manager.play_pin_knock()
+        
+        # Record the pins
+        self.record_pins(pins)
     
     def record_pins(self, pins: int):
         """
