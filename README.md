@@ -165,7 +165,7 @@ Make your Bowling Oracle even more magical with custom animations and sounds!
    - [Tenor](https://tenor.com/search/bowling-gifs)
    - [Pixabay](https://pixabay.com/gifs/search/bowling/)
 
-2. **Save them** in `assets/animations/`:
+2. **Save them** in `assets/animations/` (GIFs only):
    - **Single GIF**: `strike.gif`, `spare.gif`
    - **Multiple GIFs** (random selection): `strike1.gif`, `strike2.gif`, `strike3.gif`, etc.
    - Mix base + numbered: `strike.gif`, `strike1.gif`, `strike2.gif` - all will be used!
@@ -189,7 +189,7 @@ Make your Bowling Oracle even more magical with custom animations and sounds!
    - [Zapsplat](https://www.zapsplat.com/sound-effect-category/bowling/)
    - [Pixabay Sounds](https://pixabay.com/sound-effects/search/bowling/)
 
-2. **Save them** in `assets/animations/`:
+2. **Save them** in `assets/audio/` (sounds only):
    
    **Strike sounds** (plays on strike):
    - **Single**: `strike.wav` / `strike.mp3`
