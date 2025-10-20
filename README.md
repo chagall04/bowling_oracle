@@ -253,5 +253,4 @@ This project is open source and available under the MIT License.
 
 ## Acknowledgments
 
-✨ Powered by Ancient Bowling Wisdom ✨  
-Built with 🧙 magic and Python
+Built with Python and PyQt5

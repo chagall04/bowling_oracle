@@ -29,21 +29,13 @@ class MainMenuScreen(QWidget):
         layout.setSpacing(20)
         layout.setContentsMargins(50, 50, 50, 50)
         
-        # Title with wizard theme
-        title = QLabel("🎳 Bowling Oracle 🧙")
+        # Title
+        title = QLabel("🎳 Bowling Oracle 🔮")
         title_font = QFont("Arial", 36, QFont.Bold)
         title.setFont(title_font)
         title.setAlignment(Qt.AlignCenter)
         title.setStyleSheet("color: #2c3e50; margin: 20px;")
         layout.addWidget(title)
-        
-        # Subtitle with mystical vibe
-        subtitle = QLabel("🔮 The Crystal Ball Knows Your Next Strike 🔮")
-        subtitle_font = QFont("Arial", 14, QFont.Style.StyleItalic)
-        subtitle.setFont(subtitle_font)
-        subtitle.setAlignment(Qt.AlignCenter)
-        subtitle.setStyleSheet("color: #7f8c8d; margin-bottom: 30px;")
-        layout.addWidget(subtitle)
         
         # Add spacer
         layout.addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
@@ -106,13 +98,6 @@ class MainMenuScreen(QWidget):
         # Add spacer at bottom
         layout.addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         
-        # Footer
-        footer = QLabel("🔮 Powered by Ancient Bowling Wisdom • v1.0 🔮")
-        footer_font = QFont("Arial", 10)
-        footer.setFont(footer_font)
-        footer.setAlignment(Qt.AlignCenter)
-        footer.setStyleSheet("color: #95a5a6;")
-        layout.addWidget(footer)
         
         self.setLayout(layout)
         self.setStyleSheet("background-color: #ecf0f1;")

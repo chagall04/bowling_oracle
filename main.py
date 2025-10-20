@@ -1,39 +1,34 @@
 """
-Main application entry point for Bowling Score Tracker.
-Integrates all screens and manages navigation.
+Main application entry point for Bowling Oracle.
 """
 
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QMessageBox
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QFont
 
 from database import DatabaseHandler
 from ui.main_menu import MainMenuScreen
-from ui.player_mgmt import PlayerManagementScreen
 from ui.scoring_screen import ScoringScreen
 from ui.stats_screen import StatsScreen
+from ui.player_mgmt import PlayerManagementScreen
 from ui.game_over import GameOverScreen
-from ui.animations import AnimationWidget
 from ui.settings_screen import SettingsScreen
 
 
-class BowlingTrackerApp(QMainWindow):
-    """Main application window managing all screens."""
+class BowlingOracleApp(QMainWindow):
+    """Main application window."""
     
     def __init__(self):
-        """Initialize the main application."""
+        """Initialize the application."""
         super().__init__()
         
         # Initialize database
         self.db = DatabaseHandler()
         
         # Set up main window
-        self.setWindowTitle("🎳 Bowling Oracle 🧙")
+        self.setWindowTitle("🎳 Bowling Oracle 🔮")
         self.setMinimumSize(1200, 800)
-        
-        # Theme settings
-        self.current_theme = 'light'
         
         # Create stacked widget for screen management
         self.stacked_widget = QStackedWidget()
@@ -41,82 +36,76 @@ class BowlingTrackerApp(QMainWindow):
         
         # Initialize screens
         self.main_menu = MainMenuScreen()
-        self.player_mgmt = PlayerManagementScreen(self.db)
         self.scoring_screen = ScoringScreen(self.db)
         self.stats_screen = StatsScreen(self.db)
-        self.game_over_screen = GameOverScreen()
+        self.player_mgmt = PlayerManagementScreen(self.db)
+        self.game_over = GameOverScreen()
         self.settings_screen = SettingsScreen(self.db)
         
         # Add screens to stacked widget
-        self.stacked_widget.addWidget(self.main_menu)         # Index 0
-        self.stacked_widget.addWidget(self.player_mgmt)       # Index 1
-        self.stacked_widget.addWidget(self.scoring_screen)    # Index 2
-        self.stacked_widget.addWidget(self.stats_screen)      # Index 3
-        self.stacked_widget.addWidget(self.game_over_screen)  # Index 4
-        self.stacked_widget.addWidget(self.settings_screen)   # Index 5
-        
-        # Animation widget
-        self.animation_widget = AnimationWidget(self)
+        self.stacked_widget.addWidget(self.main_menu)
+        self.stacked_widget.addWidget(self.scoring_screen)
+        self.stacked_widget.addWidget(self.stats_screen)
+        self.stacked_widget.addWidget(self.player_mgmt)
+        self.stacked_widget.addWidget(self.game_over)
+        self.stacked_widget.addWidget(self.settings_screen)
         
         # Connect signals
-        self._connect_signals()
+        self.connect_signals()
         
         # Show main menu
-        self.show_main_menu()
-        
-        # Center window on screen
-        self.center_on_screen()
+        self.stacked_widget.setCurrentIndex(0)
     
-    def center_on_screen(self):
-        """Center the window on the screen."""
-        screen = QApplication.desktop().screenGeometry()
-        window = self.geometry()
-        x = (screen.width() - window.width()) // 2
-        y = (screen.height() - window.height()) // 2
-        self.move(x, y)
-    
-    def _connect_signals(self):
-        """Connect all signal handlers for navigation."""
+    def connect_signals(self):
+        """Connect all signal-slot connections."""
         # Main menu signals
-        self.main_menu.start_game_clicked.connect(self.show_game_setup)
+        self.main_menu.start_game_clicked.connect(self.start_game)
         self.main_menu.view_stats_clicked.connect(self.show_stats)
-        self.main_menu.manage_players_clicked.connect(self.show_player_management)
+        self.main_menu.manage_players_clicked.connect(self.show_player_mgmt)
         self.main_menu.settings_clicked.connect(self.show_settings)
-        self.main_menu.quit_clicked.connect(self.quit_application)
-        
-        # Player management signals
-        self.player_mgmt.back_clicked.connect(self.show_main_menu)
+        self.main_menu.quit_clicked.connect(self.close)
         
         # Scoring screen signals
-        self.scoring_screen.game_complete.connect(self.show_game_over)
+        self.scoring_screen.game_completed.connect(self.show_game_over)
         self.scoring_screen.back_clicked.connect(self.show_main_menu)
         
         # Stats screen signals
         self.stats_screen.back_clicked.connect(self.show_main_menu)
         
-        # Game over screen signals
-        self.game_over_screen.rematch_clicked.connect(self.start_rematch)
-        self.game_over_screen.main_menu_clicked.connect(self.show_main_menu)
+        # Player management signals
+        self.player_mgmt.back_clicked.connect(self.show_main_menu)
         
-        # Settings screen signals
+        # Game over signals
+        self.game_over.rematch_clicked.connect(self.start_game)
+        self.game_over.main_menu_clicked.connect(self.show_main_menu)
+        
+        # Connect settings signals
+        self.main_menu.settings_clicked.connect(self.show_settings)
         self.settings_screen.back_clicked.connect(self.show_main_menu)
-        self.settings_screen.theme_changed.connect(self.apply_theme)
     
-    def show_main_menu(self):
-        """Show the main menu screen."""
-        self.stacked_widget.setCurrentIndex(0)
-    
-    def show_player_management(self):
-        """Show the player management screen."""
+    def start_game(self):
+        """Start a new game."""
+        players = self.db.get_all_players()
+        
+        if not players:
+            QMessageBox.information(
+                self,
+                "No Players",
+                "Please add players before starting a game."
+            )
+            return
+        
+        self.scoring_screen.start_new_game(players)
         self.stacked_widget.setCurrentIndex(1)
     
-    def show_game_setup(self):
-        """Show game setup and start new game."""
-        # Start new game (this will show player selection dialog)
-        if self.scoring_screen.start_new_game():
-            self.stacked_widget.setCurrentIndex(2)
-            # Connect animation triggers
-            self.scoring_screen.show_animation = self.show_animation
+    def show_main_menu(self):
+        """Show the main menu."""
+        self.stacked_widget.setCurrentIndex(0)
+    
+    def show_player_mgmt(self):
+        """Show the player management screen."""
+        self.player_mgmt.refresh_players()
+        self.stacked_widget.setCurrentIndex(3)
     
     def show_stats(self):
         """Show the statistics screen."""
@@ -136,165 +125,27 @@ class BowlingTrackerApp(QMainWindow):
         """Show the settings screen."""
         self.stacked_widget.setCurrentIndex(5)
     
-    def apply_theme(self, theme: str):
-        """
-        Apply theme to application.
-        
-        Args:
-            theme: 'light' or 'dark'
-        """
-        self.current_theme = theme
-        
-        if theme == 'dark':
-            # Dark theme stylesheet
-            dark_style = """
-                QWidget {
-                    background-color: #1e1e1e;
-                    color: #e0e0e0;
-                }
-                QMainWindow {
-                    background-color: #1e1e1e;
-                }
-                QPushButton {
-                    background-color: #2d2d2d;
-                    color: #e0e0e0;
-                    border: 1px solid #3d3d3d;
-                    border-radius: 5px;
-                    padding: 8px;
-                }
-                QPushButton:hover {
-                    background-color: #3d3d3d;
-                }
-                QLabel {
-                    color: #e0e0e0;
-                }
-                QLineEdit, QComboBox {
-                    background-color: #2d2d2d;
-                    color: #e0e0e0;
-                    border: 1px solid #3d3d3d;
-                    border-radius: 3px;
-                    padding: 5px;
-                }
-                QListWidget, QTableWidget {
-                    background-color: #2d2d2d;
-                    color: #e0e0e0;
-                    border: 1px solid #3d3d3d;
-                }
-                QGroupBox {
-                    color: #e0e0e0;
-                    border: 2px solid #3d3d3d;
-                    border-radius: 5px;
-                    margin-top: 10px;
-                    font-weight: bold;
-                }
-                QFrame {
-                    background-color: #2d2d2d;
-                }
-            """
-            self.setStyleSheet(dark_style)
-        else:
-            # Light theme (default)
-            self.setStyleSheet("")
-        
-        # Refresh all screens
-        for i in range(self.stacked_widget.count()):
-            widget = self.stacked_widget.widget(i)
-            if hasattr(widget, 'update'):
-                widget.update()
-    
-    def show_game_over(self, results):
-        """
-        Show the game over screen with results.
-        
-        Args:
-            results: List of game results
-        """
-        self.game_over_screen.display_results(results)
+    def show_game_over(self, game_data):
+        """Show the game over screen with results."""
+        self.game_over.show_results(game_data)
         self.stacked_widget.setCurrentIndex(4)
-    
-    def start_rematch(self, player_ids):
-        """
-        Start a rematch with the same players.
-        
-        Args:
-            player_ids: List of player IDs to include in rematch
-        """
-        # Get player data
-        players = []
-        for player_id in player_ids:
-            player_data = self.db.get_player(player_id)
-            if player_data:
-                players.append(player_data)
-        
-        if not players:
-            QMessageBox.warning(self, "Error", "Could not load player data for rematch.")
-            return
-        
-        # Create new games for players
-        from scoring import GameManager
-        self.scoring_screen.game_manager = GameManager()
-        
-        for player_data in players:
-            game_id = self.db.create_game(player_data['player_id'])
-            self.scoring_screen.game_manager.add_player(
-                player_data['player_id'],
-                player_data['player_name'],
-                game_id
-            )
-        
-        # Build scorecard and show scoring screen
-        self.scoring_screen.build_scorecard()
-        self.scoring_screen.update_display()
-        self.stacked_widget.setCurrentIndex(2)
-    
-    def show_animation(self, animation_type: str):
-        """
-        Show strike or spare animation.
-        
-        Args:
-            animation_type: 'strike' or 'spare'
-        """
-        if animation_type == 'strike':
-            self.animation_widget.show_strike()
-        elif animation_type == 'spare':
-            self.animation_widget.show_spare()
-    
-    def quit_application(self):
-        """Quit the application."""
-        reply = QMessageBox.question(
-            self,
-            "Quit Application",
-            "Are you sure you want to quit?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        
-        if reply == QMessageBox.Yes:
-            self.db.close()
-            QApplication.quit()
-    
-    def closeEvent(self, event):
-        """Handle window close event."""
-        self.db.close()
-        event.accept()
 
 
 def main():
-    """Main entry point for the application."""
+    """Main entry point."""
     app = QApplication(sys.argv)
-    app.setStyle('Fusion')  # Modern look
     
-    # Set application metadata
-    app.setApplicationName("Bowling Score Tracker")
-    app.setOrganizationName("Athlone Bowling League")
+    # Set application properties
+    app.setApplicationName("Bowling Oracle")
+    app.setApplicationVersion("1.0")
     
     # Create and show main window
-    window = BowlingTrackerApp()
+    window = BowlingOracleApp()
     window.show()
     
+    # Start event loop
     sys.exit(app.exec_())
 
 
 if __name__ == "__main__":
     main()
-

@@ -3,8 +3,7 @@ Settings screen for app configuration and data management.
 """
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-                             QLabel, QMessageBox, QFileDialog, QGroupBox,
-                             QRadioButton, QButtonGroup)
+                             QLabel, QMessageBox, QFileDialog, QGroupBox)
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from database import DatabaseHandler
@@ -17,7 +16,6 @@ class SettingsScreen(QWidget):
     
     # Signals
     back_clicked = pyqtSignal()
-    theme_changed = pyqtSignal(str)  # Emits 'light' or 'dark'
     
     def __init__(self, db: DatabaseHandler):
         """
@@ -28,7 +26,6 @@ class SettingsScreen(QWidget):
         """
         super().__init__()
         self.db = db
-        self.current_theme = 'light'
         self.init_ui()
     
     def init_ui(self):
@@ -42,36 +39,6 @@ class SettingsScreen(QWidget):
         title.setFont(QFont("Arial", 24, QFont.Bold))
         title.setStyleSheet("color: #2c3e50; margin-bottom: 10px;")
         layout.addWidget(title)
-        
-        # Theme Settings Group
-        theme_group = QGroupBox("Appearance")
-        theme_group.setFont(QFont("Arial", 12, QFont.Bold))
-        theme_layout = QVBoxLayout()
-        
-        theme_label = QLabel("Theme:")
-        theme_label.setFont(QFont("Arial", 11))
-        theme_layout.addWidget(theme_label)
-        
-        # Radio buttons for theme
-        self.theme_button_group = QButtonGroup()
-        
-        self.light_mode_radio = QRadioButton("☀️ Light Mode")
-        self.light_mode_radio.setFont(QFont("Arial", 11))
-        self.light_mode_radio.setChecked(True)
-        self.light_mode_radio.toggled.connect(lambda: self.on_theme_changed('light'))
-        
-        self.dark_mode_radio = QRadioButton("🌙 Dark Mode")
-        self.dark_mode_radio.setFont(QFont("Arial", 11))
-        self.dark_mode_radio.toggled.connect(lambda: self.on_theme_changed('dark'))
-        
-        self.theme_button_group.addButton(self.light_mode_radio)
-        self.theme_button_group.addButton(self.dark_mode_radio)
-        
-        theme_layout.addWidget(self.light_mode_radio)
-        theme_layout.addWidget(self.dark_mode_radio)
-        
-        theme_group.setLayout(theme_layout)
-        layout.addWidget(theme_group)
         
         # Data Management Group
         data_group = QGroupBox("Data Management")
@@ -144,32 +111,33 @@ class SettingsScreen(QWidget):
                 padding: 8px;
             }
             QPushButton:hover {
-                background-color: #e74c3c;
+                background-color: #a93226;
             }
         """)
         self.wipe_data_btn.clicked.connect(self.wipe_all_data)
-        data_layout.addWidget(self.wipe_data_btn)
         
+        data_layout.addWidget(self.wipe_data_btn)
         data_group.setLayout(data_layout)
         layout.addWidget(data_group)
         
-        # Add stretch
-        layout.addStretch()
+        # Add spacer
+        layout.addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         
         # Back button
-        self.back_btn = QPushButton("⬅️ Back to Main Menu")
-        self.back_btn.setFont(QFont("Arial", 11, QFont.Bold))
+        self.back_btn = QPushButton("← Back to Main Menu")
+        self.back_btn.setFont(QFont("Arial", 12))
         self.back_btn.setMinimumHeight(40)
         self.back_btn.setCursor(Qt.PointingHandCursor)
         self.back_btn.setStyleSheet("""
             QPushButton {
-                background-color: #7f8c8d;
+                background-color: #95a5a6;
                 color: white;
                 border: none;
                 border-radius: 5px;
+                padding: 10px;
             }
             QPushButton:hover {
-                background-color: #95a5a6;
+                background-color: #7f8c8d;
             }
         """)
         self.back_btn.clicked.connect(self.back_clicked.emit)
@@ -177,23 +145,6 @@ class SettingsScreen(QWidget):
         
         self.setLayout(layout)
         self.setStyleSheet("background-color: #ecf0f1;")
-    
-    def on_theme_changed(self, theme: str):
-        """
-        Handle theme change.
-        
-        Args:
-            theme: 'light' or 'dark'
-        """
-        if self.sender().isChecked():
-            self.current_theme = theme
-            self.theme_changed.emit(theme)
-            QMessageBox.information(
-                self,
-                "Theme Changed",
-                f"🧙 {theme.capitalize()} mode activated!\n\n"
-                f"The Oracle has transformed the interface."
-            )
     
     def export_players_csv(self):
         """Export all players to CSV file."""
@@ -215,57 +166,39 @@ class SettingsScreen(QWidget):
             "CSV Files (*.csv)"
         )
         
-        if not file_path:
-            return
-        
-        try:
-            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(['Player ID', 'Player Name', 'Date Joined', 
-                               'Total Games', 'High Score', 'Average Score', 'Strike %'])
+        if file_path:
+            try:
+                with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(['Player ID', 'Name', 'Games Played', 'Average Score', 'High Score', 'Low Score'])
+                    
+                    for player in players:
+                        writer.writerow([
+                            player['id'],
+                            player['name'],
+                            player['games_played'],
+                            player['average_score'],
+                            player['high_score'],
+                            player['low_score']
+                        ])
                 
-                for player in players:
-                    stats = self.db.get_player_stats(player['player_id'])
-                    writer.writerow([
-                        player['player_id'],
-                        player['player_name'],
-                        player['date_joined'],
-                        stats['total_games'],
-                        stats['high_score'],
-                        stats['average_score'],
-                        stats['strike_percentage']
-                    ])
-            
-            QMessageBox.information(
-                self,
-                "Export Successful",
-                f"Players exported to:\n{file_path}"
-            )
-        
-        except Exception as e:
-            QMessageBox.critical(
-                self,
-                "Export Failed",
-                f"Error exporting players:\n{str(e)}"
-            )
+                QMessageBox.information(
+                    self,
+                    "Export Successful",
+                    f"Players exported to:\n{file_path}"
+                )
+            except Exception as e:
+                QMessageBox.critical(
+                    self,
+                    "Export Failed",
+                    f"Failed to export players:\n{str(e)}"
+                )
     
     def export_games_csv(self):
         """Export all games to CSV file."""
-        # Get all players to get their games
-        players = self.db.get_all_players()
-        all_games = []
+        games = self.db.get_all_games()
         
-        for player in players:
-            games = self.db.get_player_games(player['player_id'])
-            for game in games:
-                all_games.append({
-                    'game_id': game['game_id'],
-                    'player_name': player['player_name'],
-                    'final_score': game['final_score'],
-                    'game_date': game['game_date']
-                })
-        
-        if not all_games:
+        if not games:
             QMessageBox.information(
                 self,
                 "No Data",
@@ -281,83 +214,72 @@ class SettingsScreen(QWidget):
             "CSV Files (*.csv)"
         )
         
-        if not file_path:
-            return
-        
-        try:
-            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(['Game ID', 'Player Name', 'Final Score', 'Game Date'])
+        if file_path:
+            try:
+                with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(['Game ID', 'Player ID', 'Player Name', 'Total Score', 'Date Played'])
+                    
+                    for game in games:
+                        writer.writerow([
+                            game['id'],
+                            game['player_id'],
+                            game['player_name'],
+                            game['total_score'],
+                            game['date_played']
+                        ])
                 
-                for game in all_games:
-                    writer.writerow([
-                        game['game_id'],
-                        game['player_name'],
-                        game['final_score'],
-                        game['game_date']
-                    ])
-            
-            QMessageBox.information(
-                self,
-                "Export Successful",
-                f"Games exported to:\n{file_path}"
-            )
-        
-        except Exception as e:
-            QMessageBox.critical(
-                self,
-                "Export Failed",
-                f"Error exporting games:\n{str(e)}"
-            )
+                QMessageBox.information(
+                    self,
+                    "Export Successful",
+                    f"Games exported to:\n{file_path}"
+                )
+            except Exception as e:
+                QMessageBox.critical(
+                    self,
+                    "Export Failed",
+                    f"Failed to export games:\n{str(e)}"
+                )
     
     def wipe_all_data(self):
-        """Wipe all data from the database after confirmation."""
-        reply = QMessageBox.warning(
+        """Wipe all data with confirmation."""
+        reply = QMessageBox.question(
             self,
-            "⚠️ Confirm Data Wipe",
-            "Are you ABSOLUTELY SURE you want to delete ALL data?\n\n"
-            "This will permanently remove:\n"
+            "Confirm Data Wipe",
+            "⚠️ WARNING: This will permanently delete ALL data!\n\n"
+            "This includes:\n"
             "• All players\n"
             "• All games\n"
-            "• All game history\n\n"
-            "THIS CANNOT BE UNDONE!",
+            "• All statistics\n\n"
+            "This action cannot be undone!\n\n"
+            "Are you absolutely sure?",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No
         )
         
-        if reply != QMessageBox.Yes:
-            return
-        
-        # Second confirmation
-        reply2 = QMessageBox.warning(
-            self,
-            "⚠️ Final Confirmation",
-            "This is your last chance!\n\n"
-            "Delete everything?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        
-        if reply2 != QMessageBox.Yes:
-            return
-        
-        try:
-            # Delete all data
-            self.db.cursor.execute("DELETE FROM Frame")
-            self.db.cursor.execute("DELETE FROM Game")
-            self.db.cursor.execute("DELETE FROM Player")
-            self.db.connection.commit()
+        if reply == QMessageBox.Yes:
+            # Double confirmation
+            reply2 = QMessageBox.question(
+                self,
+                "Final Confirmation",
+                "🚨 LAST CHANCE! 🚨\n\n"
+                "You are about to delete EVERYTHING!\n\n"
+                "Type 'DELETE' in your mind and click Yes if you're sure.",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
             
-            QMessageBox.information(
-                self,
-                "Data Wiped",
-                "All data has been permanently deleted."
-            )
-        
-        except Exception as e:
-            QMessageBox.critical(
-                self,
-                "Error",
-                f"Failed to wipe data:\n{str(e)}"
-            )
-
+            if reply2 == QMessageBox.Yes:
+                try:
+                    self.db.wipe_all_data()
+                    QMessageBox.information(
+                        self,
+                        "Data Wiped",
+                        "All data has been permanently deleted."
+                    )
+                except Exception as e:
+                    QMessageBox.critical(
+                        self,
+                        "Wipe Failed",
+                        f"Failed to wipe data:\n{str(e)}"
+                    )
