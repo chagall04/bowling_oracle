@@ -1,6 +1,6 @@
 """
-Database handler for bowling score tracker.
-Manages SQLite database operations for players, games, and frames.
+database handler for bowling oracle
+manages sqlite database operations
 """
 
 import sqlite3
@@ -9,15 +9,10 @@ from typing import List, Dict, Optional, Tuple
 
 
 class DatabaseHandler:
-    """Handles all database operations for the bowling tracker application."""
+    """handles all database operations"""
     
     def __init__(self, db_name: str = "bowling_tracker.db"):
-        """
-        Initialize database connection and create tables if they don't exist.
-        
-        Args:
-            db_name: Name of the SQLite database file
-        """
+        """initialize database connection"""
         self.db_name = db_name
         self.connection = None
         self.cursor = None
@@ -25,13 +20,13 @@ class DatabaseHandler:
         self._create_tables()
     
     def _connect(self):
-        """Establish connection to the SQLite database."""
+        """establish connection to sqlite database"""
         self.connection = sqlite3.connect(self.db_name)
         self.cursor = self.connection.cursor()
     
     def _create_tables(self):
-        """Create the database schema if tables don't exist."""
-        # Player table
+        """create database schema if tables don't exist"""
+        # player table
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS Player (
                 player_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +35,7 @@ class DatabaseHandler:
             )
         """)
         
-        # Game table
+        # game table
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS Game (
                 game_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,7 +46,7 @@ class DatabaseHandler:
             )
         """)
         
-        # Frame table
+        # frame table
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS Frame (
                 frame_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,21 +62,10 @@ class DatabaseHandler:
         
         self.connection.commit()
     
-    # ==================== Player Operations ====================
+    # Player Operations
     
     def add_player(self, player_name: str) -> int:
-        """
-        Add a new player to the database.
-        
-        Args:
-            player_name: Name of the player
-            
-        Returns:
-            player_id of the newly added player
-            
-        Raises:
-            sqlite3.IntegrityError: If player name already exists
-        """
+        """add new player to database"""
         date_joined = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.cursor.execute(
             "INSERT INTO Player (player_name, date_joined) VALUES (?, ?)",
@@ -91,15 +75,7 @@ class DatabaseHandler:
         return self.cursor.lastrowid
     
     def get_player(self, player_id: int) -> Optional[Dict]:
-        """
-        Retrieve player information by ID.
-        
-        Args:
-            player_id: ID of the player
-            
-        Returns:
-            Dictionary with player data or None if not found
-        """
+        """retrieve player by id"""
         self.cursor.execute(
             "SELECT player_id, player_name, date_joined FROM Player WHERE player_id = ?",
             (player_id,)
@@ -114,12 +90,7 @@ class DatabaseHandler:
         return None
     
     def get_all_players(self) -> List[Dict]:
-        """
-        Retrieve all players from the database.
-        
-        Returns:
-            List of dictionaries containing player data
-        """
+        """retrieve all players from database"""
         self.cursor.execute(
             "SELECT player_id, player_name, date_joined FROM Player ORDER BY player_name"
         )
@@ -134,38 +105,25 @@ class DatabaseHandler:
         ]
     
     def delete_player(self, player_id: int):
-        """
-        Delete a player and all associated games and frames.
-        
-        Args:
-            player_id: ID of the player to delete
-        """
-        # Get all game IDs for this player
+        """delete player and all their data"""
+        # get all game ids for this player
         self.cursor.execute("SELECT game_id FROM Game WHERE player_id = ?", (player_id,))
         game_ids = [row[0] for row in self.cursor.fetchall()]
         
-        # Delete all frames for these games
+        # delete all frames for these games
         for game_id in game_ids:
             self.cursor.execute("DELETE FROM Frame WHERE game_id = ?", (game_id,))
         
-        # Delete all games for this player
+        # delete all games for this player
         self.cursor.execute("DELETE FROM Game WHERE player_id = ?", (player_id,))
         
-        # Delete the player
+        # delete the player
         self.cursor.execute("DELETE FROM Player WHERE player_id = ?", (player_id,))
         
         self.connection.commit()
     
     def search_players(self, search_term: str) -> List[Dict]:
-        """
-        Search for players by name (case-insensitive partial match).
-        
-        Args:
-            search_term: Search string
-            
-        Returns:
-            List of matching player dictionaries
-        """
+        """search players by name"""
         self.cursor.execute(
             "SELECT player_id, player_name, date_joined FROM Player WHERE player_name LIKE ? ORDER BY player_name",
             (f"%{search_term}%",)
@@ -180,18 +138,10 @@ class DatabaseHandler:
             for row in results
         ]
     
-    # ==================== Game Operations ====================
+    # game operations
     
     def create_game(self, player_id: int) -> int:
-        """
-        Create a new game for a player.
-        
-        Args:
-            player_id: ID of the player
-            
-        Returns:
-            game_id of the newly created game
-        """
+        """create new game for player"""
         game_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.cursor.execute(
             "INSERT INTO Game (player_id, final_score, game_date) VALUES (?, ?, ?)",
@@ -201,13 +151,7 @@ class DatabaseHandler:
         return self.cursor.lastrowid
     
     def update_game_score(self, game_id: int, final_score: int):
-        """
-        Update the final score for a completed game.
-        
-        Args:
-            game_id: ID of the game
-            final_score: Final calculated score
-        """
+        """update final score for completed game"""
         self.cursor.execute(
             "UPDATE Game SET final_score = ? WHERE game_id = ?",
             (final_score, game_id)
@@ -238,20 +182,11 @@ class DatabaseHandler:
             for row in results
         ]
     
-    # ==================== Frame Operations ====================
+    # frame operations
     
     def add_frame(self, game_id: int, frame_number: int, roll1_pins: int,
                   roll2_pins: Optional[int] = None, roll3_pins: Optional[int] = None):
-        """
-        Add a frame record to the database.
-        
-        Args:
-            game_id: ID of the game
-            frame_number: Frame number (1-10)
-            roll1_pins: Pins knocked down on first roll
-            roll2_pins: Pins knocked down on second roll (optional)
-            roll3_pins: Pins knocked down on third roll (10th frame only)
-        """
+        """add frame record to database"""
         self.cursor.execute(
             "INSERT INTO Frame (game_id, frame_number, roll1_pins, roll2_pins, roll3_pins) VALUES (?, ?, ?, ?, ?)",
             (game_id, frame_number, roll1_pins, roll2_pins, roll3_pins)
@@ -259,15 +194,7 @@ class DatabaseHandler:
         self.connection.commit()
     
     def get_game_frames(self, game_id: int) -> List[Dict]:
-        """
-        Get all frames for a specific game.
-        
-        Args:
-            game_id: ID of the game
-            
-        Returns:
-            List of frame dictionaries ordered by frame number
-        """
+        """get all frames for specific game"""
         self.cursor.execute(
             "SELECT frame_id, frame_number, roll1_pins, roll2_pins, roll3_pins FROM Frame WHERE game_id = ? ORDER BY frame_number",
             (game_id,)
@@ -287,16 +214,8 @@ class DatabaseHandler:
     # ==================== Statistics Operations ====================
     
     def get_player_stats(self, player_id: int) -> Dict:
-        """
-        Calculate comprehensive statistics for a player.
-        
-        Args:
-            player_id: ID of the player
-            
-        Returns:
-            Dictionary containing player statistics
-        """
-        # Get all games
+        """get player statistics"""
+        # get all games
         games = self.get_player_games(player_id)
         
         if not games:
@@ -307,13 +226,13 @@ class DatabaseHandler:
                 'strike_percentage': 0.0
             }
         
-        # Calculate basic stats
+        # calculate basic stats
         total_games = len(games)
         scores = [game['final_score'] for game in games]
         high_score = max(scores)
         average_score = sum(scores) / total_games
         
-        # Calculate strike percentage
+        # calculate strike percentage
         total_strikes = 0
         total_first_rolls = 0
         
@@ -335,7 +254,7 @@ class DatabaseHandler:
         }
     
     def close(self):
-        """Close the database connection."""
+        """close database connection"""
         if self.connection:
             self.connection.close()
 

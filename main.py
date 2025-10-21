@@ -1,5 +1,5 @@
 """
-Main application entry point for Bowling Oracle.
+bowling oracle - main application
 """
 
 import sys
@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QStackedWidget, QMessageB
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 
+# import modules
 from database import DatabaseHandler
 from ui.main_menu import MainMenuScreen
 from ui.scoring_screen import ScoringScreen
@@ -17,24 +18,23 @@ from ui.settings_screen import SettingsScreen
 
 
 class BowlingOracleApp(QMainWindow):
-    """Main application window."""
+    """main application window that manages all screens"""
     
     def __init__(self):
-        """Initialize the application."""
         super().__init__()
         
-        # Initialize database
+        # connect to sqlite database
         self.db = DatabaseHandler()
         
-        # Set up main window
+        # set up main window
         self.setWindowTitle("🎳 Bowling Oracle 🔮")
         self.setMinimumSize(1200, 800)
         
-        # Create stacked widget for screen management
+        # create stacked widget to hold all screens
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
         
-        # Initialize screens
+        # create all screens
         self.main_menu = MainMenuScreen()
         self.scoring_screen = ScoringScreen(self.db)
         self.stats_screen = StatsScreen(self.db)
@@ -42,76 +42,71 @@ class BowlingOracleApp(QMainWindow):
         self.game_over = GameOverScreen()
         self.settings_screen = SettingsScreen(self.db)
         
-        # Add screens to stacked widget
-        self.stacked_widget.addWidget(self.main_menu)
-        self.stacked_widget.addWidget(self.scoring_screen)
-        self.stacked_widget.addWidget(self.stats_screen)
-        self.stacked_widget.addWidget(self.player_mgmt)
-        self.stacked_widget.addWidget(self.game_over)
-        self.stacked_widget.addWidget(self.settings_screen)
+        # add screens to stacked widget
+        # each screen gets index number (0, 1, 2, etc.)
+        self.stacked_widget.addWidget(self.main_menu)           # index 0
+        self.stacked_widget.addWidget(self.scoring_screen)      # index 1
+        self.stacked_widget.addWidget(self.stats_screen)        # index 2
+        self.stacked_widget.addWidget(self.player_mgmt)         # index 3
+        self.stacked_widget.addWidget(self.game_over)           # index 4
+        self.stacked_widget.addWidget(self.settings_screen)     # index 5
         
-        # Connect signals
+        # connect all the button signals to methods
         self.connect_signals()
         
-        # Show main menu
+        # start by showing main menu
         self.stacked_widget.setCurrentIndex(0)
     
     def connect_signals(self):
-        """Connect all signal-slot connections."""
-        # Main menu signals
+        """connect all button clicks to their corresponding methods"""
+        # main menu button connections
         self.main_menu.start_game_clicked.connect(self.start_game)
         self.main_menu.view_stats_clicked.connect(self.show_stats)
         self.main_menu.manage_players_clicked.connect(self.show_player_mgmt)
         self.main_menu.settings_clicked.connect(self.show_settings)
         self.main_menu.quit_clicked.connect(self.close)
         
-        # Scoring screen signals
-        self.scoring_screen.game_completed.connect(self.show_game_over)
+        # scoring screen connections
+        self.scoring_screen.game_complete.connect(self.show_game_over)
         self.scoring_screen.back_clicked.connect(self.show_main_menu)
         
-        # Stats screen signals
+        # stats screen connections
         self.stats_screen.back_clicked.connect(self.show_main_menu)
         
-        # Player management signals
+        # player management connections
         self.player_mgmt.back_clicked.connect(self.show_main_menu)
         
-        # Game over signals
+        # game over screen connections
         self.game_over.rematch_clicked.connect(self.start_game)
         self.game_over.main_menu_clicked.connect(self.show_main_menu)
         
-        # Connect settings signals
-        self.main_menu.settings_clicked.connect(self.show_settings)
+        # settings screen connections
         self.settings_screen.back_clicked.connect(self.show_main_menu)
     
     def start_game(self):
-        """Start a new game."""
-        players = self.db.get_all_players()
-        
-        if not players:
-            QMessageBox.information(
-                self,
-                "No Players",
-                "Please add players before starting a game."
-            )
-            return
-        
-        self.scoring_screen.start_new_game(players)
-        self.stacked_widget.setCurrentIndex(1)
+        """start new bowling game"""
+        # ask scoring screen to start new game
+        if self.scoring_screen.start_new_game():
+            # if successful, switch to scoring screen
+            self.stacked_widget.setCurrentIndex(1)
     
     def show_main_menu(self):
-        """Show the main menu."""
+        """switch back to main menu"""
         self.stacked_widget.setCurrentIndex(0)
     
     def show_player_mgmt(self):
-        """Show the player management screen."""
-        self.player_mgmt.refresh_players()
+        """show player management screen"""
+        # refresh player list before showing
+        self.player_mgmt.load_players()
         self.stacked_widget.setCurrentIndex(3)
     
     def show_stats(self):
-        """Show the statistics screen."""
+        """show statistics screen"""
+        # check if any players first
         players = self.db.get_all_players()
         
         if not players:
+            # show message if no players exist
             QMessageBox.information(
                 self,
                 "No Players",
@@ -119,31 +114,39 @@ class BowlingOracleApp(QMainWindow):
             )
             return
         
-        self.stacked_widget.setCurrentIndex(3)
+        # switch to stats screen
+        self.stacked_widget.setCurrentIndex(2)
     
     def show_settings(self):
-        """Show the settings screen."""
+        """show settings screen"""
         self.stacked_widget.setCurrentIndex(5)
     
     def show_game_over(self, game_data):
-        """Show the game over screen with results."""
-        self.game_over.show_results(game_data)
-        self.stacked_widget.setCurrentIndex(4)
+        """show game over screen with final results"""
+        try:
+            # tell game over screen to display results
+            self.game_over.display_results(game_data)
+            # switch to game over screen
+            self.stacked_widget.setCurrentIndex(4)
+        except Exception as e:
+            # if something goes wrong, show an error message
+            QMessageBox.critical(self, "Error", f"Failed to show game results: {e}")
 
 
 def main():
-    """Main entry point."""
+    """main entry point for application"""
+    # create pyqt5 application
     app = QApplication(sys.argv)
     
-    # Set application properties
+    # set application properties
     app.setApplicationName("Bowling Oracle")
     app.setApplicationVersion("1.0")
     
-    # Create and show main window
+    # create and show main window
     window = BowlingOracleApp()
     window.show()
     
-    # Start event loop
+    # start event loop
     sys.exit(app.exec_())
 
 

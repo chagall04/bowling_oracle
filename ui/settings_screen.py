@@ -1,35 +1,33 @@
 """
-Settings screen for app configuration and data management.
+settings screen for app configuration and data management
 """
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-                             QLabel, QMessageBox, QFileDialog, QGroupBox)
+                             QLabel, QMessageBox, QFileDialog, QGroupBox,
+                             QSpacerItem, QSizePolicy)
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from database import DatabaseHandler
 import csv
 from datetime import datetime
+from ui.sound_manager import SoundManager
 
 
 class SettingsScreen(QWidget):
-    """Settings screen for app configuration."""
+    """settings screen for app configuration"""
     
-    # Signals
-    back_clicked = pyqtSignal()
+    # signals
+    back_clicked = pyqtSignal()  # emits when back button clicked
     
     def __init__(self, db: DatabaseHandler):
-        """
-        Initialize the settings screen.
-        
-        Args:
-            db: Database handler instance
-        """
+        """initialize settings screen"""
         super().__init__()
         self.db = db
+        self.sound_manager = SoundManager()
         self.init_ui()
     
     def init_ui(self):
-        """Set up the user interface."""
+        """set up user interface"""
         layout = QVBoxLayout()
         layout.setSpacing(20)
         layout.setContentsMargins(30, 30, 30, 30)
@@ -145,6 +143,19 @@ class SettingsScreen(QWidget):
         
         self.setLayout(layout)
         self.setStyleSheet("background-color: #ecf0f1;")
+    
+    def showEvent(self, event):
+        """called when screen is shown"""
+        super().showEvent(event)
+        if hasattr(self, 'sound_manager'):
+            self.sound_manager.stop_music()
+            self.sound_manager.play_menu_music()
+    
+    def hideEvent(self, event):
+        """called when screen is hidden"""
+        super().hideEvent(event)
+        if hasattr(self, 'sound_manager'):
+            self.sound_manager.stop_music()
     
     def export_players_csv(self):
         """Export all players to CSV file."""

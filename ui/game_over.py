@@ -1,5 +1,5 @@
 """
-Game over screen showing winner and final scores.
+game over screen showing winner and final scores
 """
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
@@ -11,44 +11,85 @@ from ui.sound_manager import SoundManager
 
 
 class GameOverScreen(QWidget):
-    """Screen shown when a game is completed."""
+    """screen shown when game is completed"""
     
-    # Signals
-    rematch_clicked = pyqtSignal(list)  # Emits list of player IDs for rematch
+    # signals
+    rematch_clicked = pyqtSignal(list)  # emits list of player ids for rematch
     main_menu_clicked = pyqtSignal()
     
     def __init__(self):
-        """Initialize the game over screen."""
+        """initialize game over screen"""
         super().__init__()
         self.game_results = []
         self.sound_manager = SoundManager()  # Initialize sound system
         self.init_ui()
     
     def init_ui(self):
-        """Set up the user interface."""
+        """set up user interface"""
         layout = QVBoxLayout()
         layout.setSpacing(20)
         layout.setContentsMargins(50, 50, 50, 50)
         
-        # Game Over title
+        # Game Over title with wizard theme
+        title_layout = QHBoxLayout()
+        
+        # Left magic emojis
+        left_magic = QLabel("🧙")
+        left_magic.setFont(QFont("Arial", 24))
+        left_magic.setStyleSheet("color: #9b59b6;")
+        title_layout.addWidget(left_magic)
+        
+        # Main title with purple banner background
         self.game_over_label = QLabel("🎳 GAME OVER 🎳")
         self.game_over_label.setFont(QFont("Arial", 36, QFont.Bold))
         self.game_over_label.setAlignment(Qt.AlignCenter)
-        self.game_over_label.setStyleSheet("color: #2c3e50; margin: 20px;")
-        layout.addWidget(self.game_over_label)
+        self.game_over_label.setStyleSheet("""
+            color: white; 
+            background-color: #9b59b6; 
+            border: 3px solid #8e44ad;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px;
+        """)
+        title_layout.addWidget(self.game_over_label)
         
-        # Winner announcement
+        # Right magic emojis
+        right_magic = QLabel("🔮")
+        right_magic.setFont(QFont("Arial", 24))
+        right_magic.setStyleSheet("color: #9b59b6;")
+        title_layout.addWidget(right_magic)
+        
+        layout.addLayout(title_layout)
+        
+        # Winner announcement with magic theme
         self.winner_label = QLabel("")
         self.winner_label.setFont(QFont("Arial", 24, QFont.Bold))
         self.winner_label.setAlignment(Qt.AlignCenter)
         self.winner_label.setStyleSheet("color: #27ae60; margin: 20px;")
         layout.addWidget(self.winner_label)
         
+        # Magic trophy display
+        trophy_layout = QHBoxLayout()
+        
+        # Left sparkles
+        left_sparkles = QLabel("✨ ⭐")
+        left_sparkles.setFont(QFont("Arial", 36))
+        left_sparkles.setStyleSheet("color: #f39c12;")
+        trophy_layout.addWidget(left_sparkles)
+        
         # Trophy emoji for winner
         self.trophy_label = QLabel("🏆")
         self.trophy_label.setFont(QFont("Arial", 72))
         self.trophy_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.trophy_label)
+        trophy_layout.addWidget(self.trophy_label)
+        
+        # Right sparkles
+        right_sparkles = QLabel("⭐ ✨")
+        right_sparkles.setFont(QFont("Arial", 36))
+        right_sparkles.setStyleSheet("color: #f39c12;")
+        trophy_layout.addWidget(right_sparkles)
+        
+        layout.addLayout(trophy_layout)
         
         # Scores table
         self.scores_table = QTableWidget()
@@ -128,32 +169,29 @@ class GameOverScreen(QWidget):
         self.setStyleSheet("background-color: #ecf0f1;")
     
     def display_results(self, results: List[Dict]):
-        """
-        Display game results and play leaderboard music.
-        
-        Args:
-            results: List of dictionaries with player_name, player_id, and final_score
-        """
+        """display game results and play music"""
         self.game_results = results
         
-        # Sort by score (descending)
+        # sort by score (descending)
         sorted_results = sorted(results, key=lambda x: x['final_score'], reverse=True)
         
-        # Display winner
+        # display winner
         if sorted_results:
             winner = sorted_results[0]
+            # extract just the name without the number prefix
+            winner_name = winner['player_name'].split('. ', 1)[-1] if '. ' in winner['player_name'] else winner['player_name']
             self.winner_label.setText(
-                f"🎉 {winner['player_name']} wins with {winner['final_score']} points! 🎉"
+                f"🎉 {winner_name} wins with {winner['final_score']} points! 🎉"
             )
         
-        # Start playing leaderboard music
-        self.sound_manager.play_leaderboard_music()
+        # start playing game over music
+        self.sound_manager.play_game_over_music()
         
-        # Populate table
+        # populate table
         self.scores_table.setRowCount(len(sorted_results))
         
         for row, result in enumerate(sorted_results):
-            # Rank
+            # rank
             rank_item = QTableWidgetItem(str(row + 1))
             rank_item.setFont(QFont("Arial", 12, QFont.Bold))
             rank_item.setTextAlignment(Qt.AlignCenter)
@@ -161,8 +199,9 @@ class GameOverScreen(QWidget):
                 rank_item.setBackground(Qt.yellow)
             self.scores_table.setItem(row, 0, rank_item)
             
-            # Player name
-            name_item = QTableWidgetItem(result['player_name'])
+            # player name (clean up by removing number prefix)
+            player_name = result['player_name'].split('. ', 1)[-1] if '. ' in result['player_name'] else result['player_name']
+            name_item = QTableWidgetItem(player_name)
             name_item.setFont(QFont("Arial", 12))
             name_item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             if row == 0:
@@ -170,7 +209,7 @@ class GameOverScreen(QWidget):
                 name_item.setBackground(Qt.yellow)
             self.scores_table.setItem(row, 1, name_item)
             
-            # Score
+            # score
             score_item = QTableWidgetItem(str(result['final_score']))
             score_item.setFont(QFont("Arial", 12, QFont.Bold))
             score_item.setTextAlignment(Qt.AlignCenter)
@@ -198,4 +237,5 @@ class GameOverScreen(QWidget):
         """Stop music when leaving this screen."""
         self.sound_manager.stop_music()
         super().hideEvent(event)
+
 

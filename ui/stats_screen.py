@@ -1,5 +1,5 @@
 """
-Statistics screen with player performance data and charts.
+statistics screen with player performance data and charts
 """
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from database import DatabaseHandler
+from ui.sound_manager import SoundManager
 import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -15,10 +16,10 @@ from matplotlib.figure import Figure
 
 
 class PerformanceChart(FigureCanvas):
-    """Matplotlib chart showing player performance over time."""
+    """matplotlib chart showing player performance over time"""
     
     def __init__(self, parent=None):
-        """Initialize the performance chart."""
+        """initialize performance chart"""
         self.figure = Figure(figsize=(8, 4), dpi=100)
         self.axes = self.figure.add_subplot(111)
         super().__init__(self.figure)
@@ -79,34 +80,47 @@ class PerformanceChart(FigureCanvas):
 
 
 class StatsScreen(QWidget):
-    """Statistics screen showing player performance and history."""
+    """statistics screen showing player performance and history"""
     
     # Signal for navigation
     back_clicked = pyqtSignal()
     
     def __init__(self, db: DatabaseHandler):
-        """
-        Initialize the statistics screen.
-        
-        Args:
-            db: Database handler instance
-        """
+        """initialize stats screen"""
         super().__init__()
         self.db = db
+        self.sound_manager = SoundManager()
         self.current_player_id = None
         self.init_ui()
     
     def init_ui(self):
-        """Set up the user interface."""
+        """set up user interface"""
         layout = QVBoxLayout()
         layout.setSpacing(15)
         layout.setContentsMargins(30, 30, 30, 30)
         
-        # Title
-        title = QLabel("📊 Player Statistics")
+        # Title with subtle wizard theme
+        title_layout = QHBoxLayout()
+        
+        # Left subtle emoji
+        left_emoji = QLabel("🔮")
+        left_emoji.setFont(QFont("Arial", 18))
+        left_emoji.setStyleSheet("color: #9b59b6;")
+        title_layout.addWidget(left_emoji)
+        
+        # Main title
+        title = QLabel("Player Statistics")
         title.setFont(QFont("Arial", 24, QFont.Bold))
         title.setStyleSheet("color: #2c3e50; margin-bottom: 10px;")
-        layout.addWidget(title)
+        title_layout.addWidget(title)
+        
+        # Right subtle emoji
+        right_emoji = QLabel("✨")
+        right_emoji.setFont(QFont("Arial", 18))
+        right_emoji.setStyleSheet("color: #9b59b6;")
+        title_layout.addWidget(right_emoji)
+        
+        layout.addLayout(title_layout)
         
         # Player selection
         selection_layout = QHBoxLayout()
@@ -220,6 +234,19 @@ class StatsScreen(QWidget):
         self.setLayout(layout)
         self.setStyleSheet("background-color: #ecf0f1;")
     
+    def showEvent(self, event):
+        """called when screen is shown"""
+        super().showEvent(event)
+        if hasattr(self, 'sound_manager'):
+            self.sound_manager.stop_music()
+            self.sound_manager.play_menu_music()
+    
+    def hideEvent(self, event):
+        """Called when the screen is hidden."""
+        super().hideEvent(event)
+        if hasattr(self, 'sound_manager'):
+            self.sound_manager.stop_music()
+    
     def _create_stat_card(self, title: str, value: str, color: str) -> QWidget:
         """
         Create a statistics card widget.
@@ -264,7 +291,7 @@ class StatsScreen(QWidget):
         return card
     
     def load_players(self):
-        """Load all players into the combo box."""
+        """load all players into combo box"""
         self.player_combo.clear()
         players = self.db.get_all_players()
         

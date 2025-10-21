@@ -1,58 +1,87 @@
 """
-Player management screen for adding, removing, and searching players.
+player management screen for adding, removing, and searching players
 """
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
                              QLabel, QLineEdit, QListWidget, QListWidgetItem,
-                             QMessageBox, QInputDialog)
+                             QMessageBox, QInputDialog, QComboBox)
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from database import DatabaseHandler
 import sqlite3
+from ui.sound_manager import SoundManager
 
 
 class PlayerManagementScreen(QWidget):
-    """Screen for managing players in the database."""
+    """screen for managing players in database"""
     
-    # Signal for navigation
-    back_clicked = pyqtSignal()
+    # signal for navigation
+    back_clicked = pyqtSignal()  # emits when back button clicked
     
     def __init__(self, db: DatabaseHandler):
-        """
-        Initialize the player management screen.
-        
-        Args:
-            db: Database handler instance
-        """
+        """initialize player management screen"""
         super().__init__()
         self.db = db
+        self.sound_manager = SoundManager()
         self.init_ui()
         self.load_players()
     
     def init_ui(self):
-        """Set up the user interface."""
+        """set up user interface"""
         layout = QVBoxLayout()
         layout.setSpacing(15)
         layout.setContentsMargins(30, 30, 30, 30)
         
-        # Title
-        title = QLabel("👥 Player Management")
+        # Title with subtle wizard theme
+        title_layout = QHBoxLayout()
+        
+        # Left subtle emoji
+        left_emoji = QLabel("🧙")
+        left_emoji.setFont(QFont("Arial", 18))
+        left_emoji.setStyleSheet("color: #9b59b6;")
+        title_layout.addWidget(left_emoji)
+        
+        # Main title
+        title = QLabel("Player Management")
         title_font = QFont("Arial", 24, QFont.Bold)
         title.setFont(title_font)
         title.setStyleSheet("color: #2c3e50; margin-bottom: 10px;")
-        layout.addWidget(title)
+        title_layout.addWidget(title)
         
-        # Search bar
-        search_layout = QHBoxLayout()
+        # Right subtle emoji
+        right_emoji = QLabel("✨")
+        right_emoji.setFont(QFont("Arial", 18))
+        right_emoji.setStyleSheet("color: #9b59b6;")
+        title_layout.addWidget(right_emoji)
+        
+        layout.addLayout(title_layout)
+        
+        # Search and sort controls
+        controls_layout = QHBoxLayout()
+        
+        # Search
         search_label = QLabel("Search:")
         search_label.setFont(QFont("Arial", 11))
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Enter player name...")
         self.search_input.setFont(QFont("Arial", 11))
         self.search_input.textChanged.connect(self.search_players)
-        search_layout.addWidget(search_label)
-        search_layout.addWidget(self.search_input)
-        layout.addLayout(search_layout)
+        
+        # Sort dropdown
+        sort_label = QLabel("Sort by:")
+        sort_label.setFont(QFont("Arial", 11))
+        self.sort_combo = QComboBox()
+        self.sort_combo.setFont(QFont("Arial", 11))
+        self.sort_combo.addItems(["Alphabetical", "Average Score", "Date Joined"])
+        self.sort_combo.currentTextChanged.connect(self.sort_players)
+        
+        controls_layout.addWidget(search_label)
+        controls_layout.addWidget(self.search_input)
+        controls_layout.addStretch()
+        controls_layout.addWidget(sort_label)
+        controls_layout.addWidget(self.sort_combo)
+        
+        layout.addLayout(controls_layout)
         
         # Player list
         self.player_list = QListWidget()
@@ -143,15 +172,35 @@ class PlayerManagementScreen(QWidget):
         layout.addLayout(button_layout)
         
         self.setLayout(layout)
+    
+    def showEvent(self, event):
+        """called when screen is shown"""
+        super().showEvent(event)
+        if hasattr(self, 'sound_manager'):
+            self.sound_manager.stop_music()
+            self.sound_manager.play_menu_music()
+    
+    def hideEvent(self, event):
+        """Called when the screen is hidden."""
+        super().hideEvent(event)
+        if hasattr(self, 'sound_manager'):
+            self.sound_manager.stop_music()
         self.setStyleSheet("background-color: #ecf0f1;")
     
     def load_players(self):
-        """Load all players from the database into the list."""
+        """load all players from database into list"""
         self.player_list.clear()
         players = self.db.get_all_players()
         
+        # Sort players based on current selection
+        self.sort_players_data(players)
+        
         for player in players:
-            item_text = f"{player['player_name']} (Joined: {player['date_joined'][:10]})"
+            # Get player stats for display
+            stats = self.db.get_player_stats(player['player_id'])
+            avg_score = stats['average_score']
+            
+            item_text = f"{player['player_name']} (Avg: {avg_score:.1f}, Joined: {player['date_joined'][:10]})"
             item = QListWidgetItem(item_text)
             item.setData(Qt.UserRole, player['player_id'])  # Store player ID
             self.player_list.addItem(item)
@@ -160,8 +209,25 @@ class PlayerManagementScreen(QWidget):
         count_label = f"Total Players: {len(players)}"
         self.setWindowTitle(f"Player Management - {count_label}")
     
+    def sort_players_data(self, players):
+        """Sort players based on current sort selection."""
+        sort_by = self.sort_combo.currentText()
+        
+        if sort_by == "Alphabetical":
+            players.sort(key=lambda x: x['player_name'].lower())
+        elif sort_by == "Average Score":
+            # Sort by average score (descending)
+            players.sort(key=lambda x: self.db.get_player_stats(x['player_id'])['average_score'], reverse=True)
+        elif sort_by == "Date Joined":
+            # Sort by date joined (newest first)
+            players.sort(key=lambda x: x['date_joined'], reverse=True)
+    
+    def sort_players(self):
+        """Handle sort selection change."""
+        self.load_players()
+    
     def search_players(self):
-        """Filter players based on search input."""
+        """filter players based on search input"""
         search_term = self.search_input.text().strip()
         
         if not search_term:
@@ -178,7 +244,7 @@ class PlayerManagementScreen(QWidget):
             self.player_list.addItem(item)
     
     def add_player(self):
-        """Add a new player to the database."""
+        """add new player to database"""
         name, ok = QInputDialog.getText(
             self,
             "Add New Player",
